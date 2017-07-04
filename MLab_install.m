@@ -197,6 +197,9 @@ end
 
 % --- Startup
 
+% Update
+rehash toolboxcache
+
 % Manage write permissions
 sdir = fullfile(matlabroot, 'toolbox', 'local');
 [status, fa] = fileattrib(sdir);
