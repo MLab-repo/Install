@@ -367,7 +367,9 @@ if usejava('desktop') && matlab.desktop.editor.isEditorAvailable
 end
 
 % Remove installation file
+warning off
 delete(fname);
+warning on
 
 fprintf(' %.2f sec\n', toc);
 pause(dpt);
