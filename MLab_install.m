@@ -1,6 +1,6 @@
 %MLab Installation script
 %
-%   This script installs MLab on your computer. It can be executed with or 
+%   This script installs MLab on your computer. It can be executed with or
 %   without Matlab's java desktop.
 %
 %   --- PRE-REQUISITES
@@ -26,14 +26,13 @@
 %
 %   See also ML.uninstall, prefdir
 
-% === Parameters ==========================================================
+% --- PARAMETERS ----------------------------------------------------------
 
+% URL of the git repository
 repo = 'https://github.com/MLab-repo/MLab.git';
-root = [pwd filesep 'MLab' filesep];
 
+% Display pause time
 dpt = 0.1;
-
-% =========================================================================
 
 % --- CHECKS --------------------------------------------------------------
 
@@ -49,9 +48,8 @@ end
 root = [pwd filesep 'MLab' filesep];
 
 % Startup files
-startup_name = fullfile(matlabroot, 'toolbox', 'local', 'startup.m');
-startup_def = fullfile(matlabroot, 'toolbox', 'local', 'startup_MLab.m');
-
+fname_startup = fullfile(matlabroot, 'toolbox', 'local', 'startup.m');
+fname_startup_MLab = fullfile(matlabroot, 'toolbox', 'local', 'startup_MLab.m');
 
 % --- USER INPUT ----------------------------------------------------------
 
@@ -155,7 +153,8 @@ while true
     end
 end
 
-% --- Check for the existence of a MLab folder
+% --- PREVIOUS MLAB INSTANCE ----------------------------------------------
+
 if exist(root, 'dir')
     
     if usejava('desktop')
@@ -185,79 +184,102 @@ if exist(root, 'dir')
     
 end
 
-% --- Installation procedure
+% --- INSTALLATION --------------------------------------------------------
+
+% --- Header diplay
 
 clc
-
-% Header diplay
 if usejava('desktop')
     fprintf('\n--- [\b<strong>MLab installation</strong>]\b %s\n\n', repmat('-', [1 cws(1)-23]));
 else
     fprintf('\n--- \033[1;33;40mMLab installation\033[0m %s\n\n', repmat('-', [1 cws(1)-23]));
 end
 
-% Move existing startup file
-try
-    movefile(startup_name, startup_def);
-catch
-end
+% --- Startup
 
-% Create startup file
-suc = ['if exist(''' startup_def ''', ''file'')' char(10) ...
-       char(9) 'startup_MLab' char(10) ...
-       'end' char([10 10]) ...
-       'if exist([prefdir filesep ''MLab.mat''], ''file'')' char(10) ...
-       char(9) 'tmp = load([prefdir filesep ''MLab.mat'']);' char(10) ...
-       char(9) 'addpath(genpath(tmp.config.path), ''-end'');' char(10) ...
-       char(9) 'if tmp.config.startup.autostart' char(10) ...
-       char([9 9]) 'ML.start' char(10) ...
-       char(9) 'end' char(10) ...
-       'end' char([10 10])];
-   
+% Manage write permissions
+sdir = fullfile(matlabroot, 'toolbox', 'local');
+[status, fa] = fileattrib(sdir);
 upca = false;
-[fid, msg] = fopen(startup_name, 'w');
-if fid<0
-
-    sdir = fullfile(matlabroot, 'toolbox', 'local');
-    [status, fa] = fileattrib(sdir);
-    
-    if isunix && ~fa.OtherWrite
-        fprintf('Root access is needed to create the startup.m file.\n');
-        unix(['sudo chmod o+w ' sdir]);
-        upca = true;
-    else
-        fileattrib(sdir, '+w', 'a');
-    end
-    
-    [fid, msg] = fopen(startup_name, 'w');
-    if fid<0
-        if usejava('desktop')
-            fprintf('\n[\b<strong>Error !</strong> The startup file could not be created.]\b\n\n');
-        else
-            fprintf('\n--- \033[1;33;40mError ! The startup file could not be created.\033[0m\n\n');
-        end
-        error('ML:install:fopenError', msg);
-    end
-    
+if isunix && ~fa.OtherWrite
+    fprintf('Root access is needed to create the startup.m file.\n');
+    unix(['sudo chmod o+w ' sdir]);
+    upca = true;
+else
+    fileattrib(sdir, '+w', 'a');
 end
 
-fprintf(fid, '%% === MLab startup ========================================================\n');
-fprintf(fid, '%% This code has been generated automatically, please do not modify it.\n');
-fprintf(fid, '%% If you want to add custom startup instructions, please modify the file\n');
-fprintf(fid, '%% %s\n\n', startup_def);
-fprintf(fid, '%s', suc);
-fprintf(fid, '%% =========================================================================\n');
+fprintf('Creating startup files ...'); tic
+
+% Create startup_MLab.m
+[fid, msg] = fopen(fname_startup_MLab, 'w');
+
+if fid<0
+    if usejava('desktop')
+        fprintf('\n[\b<strong>Error !</strong> The startup file could not be created.]\b\n\n');
+    else
+        fprintf('\n--- \033[1;33;40mError ! The startup file could not be created.\033[0m\n\n');
+    end
+    error('ML:install:fopenError', msg);
+end
+
+fprintf(fid, '%s', ['% === MLab startup ========================================================' newline ...
+    '%' newline ...
+    '% This code has been generated automatically, please do not modify it.' newline ...
+    '% If you want to add custom startup instructions, please modify the file' newline ...
+    '%' newline ...
+    '% ' fname_startup newline ...
+    '%' newline ...
+    '% but be sure to keep the line running the startup_MLab script.' newline ...
+    '%' newline ...
+    '% =========================================================================' newline ...
+    newline ...
+    'if exist([prefdir filesep ''MLab.mat''], ''file'')' newline ...
+    char(9) 'tmp = load([prefdir filesep ''MLab.mat'']);' newline ...
+    char(9) 'addpath(genpath(tmp.config.path), ''-end'');' newline ...
+    char(9) 'if tmp.config.startup.autostart' newline ...
+    char([9 9]) 'ML.start' newline ...
+    char(9) 'end' newline ...
+    'end']);
+
 fclose(fid);
 
+% Create startup.m
+cmd = 'if exist(''startup_MLab'')==2, startup_MLab; end';
+if exist(fname_startup, 'file')
+    
+    % Check the content
+    C = textscan(fileread(fname_startup), '%s', 'Delimiter', newline);
+    if ~any(cellfun(@(x) strcmp(strtrim(x), cmd), C{1}))
+        fid = fopen(fname_startup, 'a');
+        fprintf(fid, '%s', [newline '% MLab startup' newline cmd]);
+        fclose(fid);
+    end
+    
+else
+    fid = fopen(fname_startup, 'w');
+    fprintf(fid, '%s', ['% MLab startup' newline cmd]);
+    fclose(fid);
+end
+
+% Set write permissions back to the initial state
 if upca
     unix(['sudo chmod o-w ' sdir]);
 end
-rehash toolbox
+
+% Update
+rehash toolboxcache
+
+fprintf(' %.2f sec\n', toc);
+
+% --- MLab folder
 
 % Remove MLab folder
 if exist(root, 'dir')
     fprintf('Removing existing MLab ...'); tic
+    warning off
     rmdir(root, 's');
+    warning on
     fprintf(' %.2f sec\n', toc);
     pause(dpt);
 end
@@ -268,7 +290,7 @@ mkdir(root);
 fprintf(' %.2f sec\n', toc);
 pause(dpt);
 
-% Clone repo
+% Clone repository
 fprintf('Cloning repository ...'); tic
 cloneCMD = org.eclipse.jgit.api.Git.cloneRepository;
 cloneCMD.setDirectory(java.io.File(root));
@@ -283,7 +305,8 @@ mkdir([root 'Plugins']);
 fprintf(' %.2f sec\n', toc);
 pause(dpt);
 
-% Install / Modify configuration file
+% --- Configuration file
+
 cfname = [prefdir filesep 'MLab.mat'];
 if exist(cfname, 'file')
     
@@ -319,13 +342,7 @@ else
     
 end
 
-% Set preference
-fprintf('Setting preferences ...'); tic
-setpref('MLab', 'path', root);
-fprintf(' %.2f sec\n', toc);
-pause(dpt);
-
-% --- Customize icon
+% --- Custom icon
 if isunix
     
     fprintf('Customizing MLab folder icon ...'); tic
@@ -333,7 +350,7 @@ if isunix
     unix(['gvfs-set-attribute -t string ' root ' metadata::custom-icon file:///' root 'Images/Icons/MLab.png']);
     
     fprintf(' %.2f sec\n', toc);
-
+    
 end
 
 % --- Installation file self-destruction
@@ -355,7 +372,7 @@ delete(fname);
 fprintf(' %.2f sec\n', toc);
 pause(dpt);
 
-% --- Final message
+% --- FINAL MESSAGE -------------------------------------------------------
 
 if usejava('desktop')
     
@@ -365,7 +382,7 @@ if usejava('desktop')
         [char(9492) repmat(char(9472), [1 cws(1)-3]) char(9496)]);
     
     fprintf('\nYou can start [\bMLab]\b by <a href="matlab:startup;">clicking here</a>.\n');
-
+    
 else
     
     fprintf('%s\n%s Your \033[1;33;40mMLab\033[0m install is successful !%s\n%s\n', ...
