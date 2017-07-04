@@ -7,7 +7,6 @@
 %
 %   - Matlab (R2014b or higher)
 %   - Internet connection
-%   - git is installed [TO CHECK !!!]
 %
 %   --- FOOTPRINT
 %
@@ -339,22 +338,22 @@ end
 
 % --- Installation file self-destruction
 
-% % % fprintf('Self-destruction of the installer ...'); tic
-% % % 
-% % % % Definition
-% % % fname = [mfilename('fullpath') '.m'];
-% % % 
-% % % % Close installation file in the editor
-% % % if usejava('desktop') && matlab.desktop.editor.isEditorAvailable
-% % %     tmp = matlab.desktop.editor.getActive;
-% % %     if strcmp(fname, tmp.Filename), tmp.close; end
-% % % end
-% % % 
-% % % % Remove installation file
-% % % delete(fname);
-% % % 
-% % % fprintf(' %.2f sec\n', toc);
-% % % pause(dpt);
+fprintf('Self-destruction of the installer ...'); tic
+
+% Definition
+fname = [mfilename('fullpath') '.m'];
+
+% Close installation file in the editor
+if usejava('desktop') && matlab.desktop.editor.isEditorAvailable
+    tmp = matlab.desktop.editor.getActive;
+    if strcmp(fname, tmp.Filename), tmp.close; end
+end
+
+% Remove installation file
+delete(fname);
+
+fprintf(' %.2f sec\n', toc);
+pause(dpt);
 
 % --- Final message
 
