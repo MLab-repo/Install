@@ -350,7 +350,7 @@ if isunix
     
     fprintf('Customizing MLab folder icon ...'); tic
     
-    unix(['gvfs-set-attribute -t string ' root ' metadata::custom-icon file:///' root 'Images/Icons/MLab.png']);
+    unix(['gvfs-set-attribute -t string ' root ' metadata::custom-icon file://' root 'Images/Icons/MLab.png']);
     
     fprintf(' %.2f sec\n', toc);
     
