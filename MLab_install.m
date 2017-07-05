@@ -42,6 +42,16 @@ if verLessThan('matlab', '8.5.0')
     return;
 end
 
+% Administrator privileges on Windows
+if strcmp(computer, 'PCWIN64')
+    wi = System.Security.Principal.WindowsIdentity.GetCurrent();
+    wp = System.Security.Principal.WindowsPrincipal(wi);
+    if ~wp.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator)
+        warning('MLab:Priviledges', 'You need administrator priviledges to install MLab on Windows.\nPlease restart Matlab as an administor and restart the install process.');
+        return;
+    end
+end
+
 % --- PREPARATION ---------------------------------------------------------
 
 % Default installation folder
