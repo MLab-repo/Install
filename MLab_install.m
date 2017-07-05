@@ -61,7 +61,7 @@ while true
     cws = get(0,'CommandWindowSize');
     
     if usejava('desktop')
-        fprintf('\n--- [\b<strong>MLab installation</strong>]\b %s\n\n', repmat('-', [1 cws(1)-23]));
+        fprintf('\n--- [\b<strong>MLab install</strong>]\b %s\n\n', repmat('-', [1 cws(1)-19]));
         fprintf('You are about to install [\bMLab]\b on this computer.\n\n');
         fprintf('Install location:\n\t<strong>%s</strong>\n\n', root);
     else
