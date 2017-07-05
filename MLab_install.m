@@ -346,14 +346,23 @@ else
 end
 
 % --- Custom icon
-if isunix
+switch computer
     
-    fprintf('Customizing MLab folder icon ...'); tic
+    case 'GLNXA64'
+        
+        fprintf('Customizing MLab folder icon ...'); tic
+        unix(['gvfs-set-attribute -t string ' root ' metadata::custom-icon file://' root 'Images/Icons/MLab.ico']);
+        fprintf(' %.2f sec\n', toc);
     
-    unix(['gvfs-set-attribute -t string ' root ' metadata::custom-icon file://' root 'Images/Icons/MLab.png']);
-    
-    fprintf(' %.2f sec\n', toc);
-    
+    case 'PCWIN64'
+        
+        fprintf('Customizing MLab folder icon ...'); tic
+        
+        fprintf(' %.2f sec\n', toc);
+        
+    case 'MACI64'
+        
+        % TO DO
 end
 
 % --- Installation file self-destruction
