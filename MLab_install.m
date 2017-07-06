@@ -218,8 +218,6 @@ if isunix && ~fa.OtherWrite
     fprintf('Root access is needed to create the startup.m file.\n');
     unix(['sudo chmod o+w ' sdir]);
     upca = true;
-else
-    fileattrib(sdir, '+w', 'a');
 end
 
 fprintf('Creating startup files ...'); tic
