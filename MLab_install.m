@@ -383,7 +383,7 @@ fname = [mfilename('fullpath') '.m'];
 % Close installation file in the editor
 if usejava('desktop') && matlab.desktop.editor.isEditorAvailable
     tmp = matlab.desktop.editor.getActive;
-    if strcmp(fname, tmp.Filename), tmp.close; end
+    if ~isempty(tmp) && strcmp(fname, tmp.Filename), tmp.close; end
 end
 
 % Remove installation file
