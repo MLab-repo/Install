@@ -10,17 +10,17 @@
 %
 %   --- FOOTPRINT
 %
-%   During the installation process, one folder called "MLab" is created at
-%   a location of your choice, containing all MLab programs. This folder
-%   will also host the plugins you may install afterwards.
+%   During the installation process only one folder called "MLab" is
+%   created. It contains all MLab programs, and also all the plugins you
+%   may install afterwards.
 %
-%   Note that after successful install, MLab is automatically started and
+%   Note that after successful install, MLab is automaticaally started and
 %   a configuration file called "MLab.mat" is created in Matlab's prefdir.
 %   A configuration file called "MLab.[Plugin name].mat" may also be
 %   created each time you install a plugin.
 %
-%   NB: This installation file will self-destruct as soon as installation 
-%   is complete.
+%   NB: This installation file will self-destruct after installation is
+%   complete.
 %
 %   A word on startup.m files.
 %
@@ -348,7 +348,7 @@ else
     
     ctmp = pwd;
     cd(root);
-    ML.config.default;
+    ML.Config.default;
     cd(ctmp);
     
 end
